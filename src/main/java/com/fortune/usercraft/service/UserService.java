@@ -2,12 +2,11 @@ package com.fortune.usercraft.service;
 
 import com.fortune.usercraft.entity.User;
 import com.fortune.usercraft.exception.DuplicatePhoneException;
-import com.fortune.usercraft.exception.MismatchPhoneAndPasswordException;
+import com.fortune.usercraft.exception.CredentialsMismatchException;
 import com.fortune.usercraft.exception.NoSuchUserException;
 import com.fortune.usercraft.repository.UserRepository;
 import com.fortune.usercraft.util.UserUtil;
 import org.springframework.stereotype.Service;
-import org.springframework.util.function.SupplierUtils;
 
 @Service
 public class UserService {
@@ -20,7 +19,7 @@ public class UserService {
     public String login(String phone, String password) {
         User user = userRepository.findByPhone(phone).orElseThrow(NoSuchUserException::new);
         if (!UserUtil.matchPassword(password, user.getPassword())) {
-            throw new MismatchPhoneAndPasswordException();
+            throw new CredentialsMismatchException();
         }
         return user.getUid();
     }
@@ -37,7 +36,6 @@ public class UserService {
             uuid = UserUtil.generateUuid();
         }
         User user = new User();
-        user.setUsername(phone);
         user.setPhone(phone);
         String encodedPassword = UserUtil.encodePassword(password);
         user.setPassword(encodedPassword);

@@ -12,13 +12,10 @@ public class User {
     private String uid;
 
     @Column(nullable = false, unique = true)
-    private String username;
+    private String phone;
 
     @Column(nullable = false)
     private String password;
-
-    @Column(nullable = false, unique = true)
-    private String phone;
 
     public int getId() {
         return id;
@@ -34,14 +31,6 @@ public class User {
 
     public void setUid(String uid) {
         this.uid = uid;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public String getPassword() {

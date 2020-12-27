@@ -2,6 +2,6 @@ package com.fortune.usercraft.exception;
 
 public class DuplicatePhoneException extends AppException {
     public DuplicatePhoneException() {
-        super("0001", "电话号码重复");
+        super("0001", "该手机已注册过");
     }
 }
