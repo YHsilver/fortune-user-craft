@@ -6,22 +6,27 @@ import com.fortune.usercraft.exception.CredentialsMismatchException;
 import com.fortune.usercraft.exception.NoSuchUserException;
 import com.fortune.usercraft.repository.UserRepository;
 import com.fortune.usercraft.util.UserUtil;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public String login(String phone, String password) {
+
         User user = userRepository.findByPhone(phone).orElseThrow(NoSuchUserException::new);
-        if (!UserUtil.matchPassword(password, user.getPassword())) {
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new CredentialsMismatchException();
         }
-        return user.getUid();
+        return user.getUserId();
     }
 
     public String register(String phone, String password) {
@@ -32,15 +37,18 @@ public class UserService {
             throw new DuplicatePhoneException();
         }
         String uuid = UserUtil.generateUuid();
-        while (userRepository.existsByUid(uuid)) {
+        while (userRepository.existsByUserId(uuid)) {
             uuid = UserUtil.generateUuid();
         }
         User user = new User();
+        user.setUserId(uuid);
         user.setPhone(phone);
-        String encodedPassword = UserUtil.encodePassword(password);
+        String encodedPassword = this.passwordEncoder.encode(password);
         user.setPassword(encodedPassword);
 
+        user.setRole("STUDENT");
+
         user = userRepository.save(user);
-        return user.getUid();
+        return user.getUserId();
     }
 }

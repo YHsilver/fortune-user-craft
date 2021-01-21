@@ -6,10 +6,10 @@ import com.fortune.usercraft.controller.response.SimpleResponse;
 import com.fortune.usercraft.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user")
@@ -33,6 +33,24 @@ public class UserController {
     public SimpleResponse login(@RequestBody LoginRequest request) {
         String uid = userService.login(request.getPhone(), request.getPassword());
         logger.info("用户登录成功，uid=" + uid);
+        // TODO: set session, and add a filter to set SecurityContext
         return SimpleResponse.success("登录成功");
+    }
+
+    @GetMapping("/current")
+    public SimpleResponse getCurrentUserInfo() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        Authentication authentication = securityContext.getAuthentication();
+        logger.info("===========================================================");
+        logger.info("Authentication: " + authentication.toString());
+        logger.info("Name:           " + authentication.getName());
+        logger.info("Principle:      " + authentication.getPrincipal());
+        logger.info("Credentials:    " + authentication.getCredentials());
+        logger.info("Details:        " + authentication.getDetails());
+        logger.info("Authorities:    " + authentication.getAuthorities());
+        logger.info("===========================================================");
+//        String uid = userService.login(request.getPhone(), request.getPassword());
+//        logger.info("用户登录成功，uid=" + uid);
+        return SimpleResponse.success("success");
     }
 }

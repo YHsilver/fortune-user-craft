@@ -13,6 +13,10 @@ public class SimpleResponse {
         return new SimpleResponse("0", msg);
     }
 
+    public static SimpleResponse success() {
+        return new SimpleResponse("0", null);
+    }
+
     public String getEcode() {
         return ecode;
     }
