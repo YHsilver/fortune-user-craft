@@ -1,54 +1,50 @@
 package com.fortune.usercraft.service;
 
-import com.fortune.usercraft.entity.User;
+import com.fortune.usercraft.entity.UserCore;
 import com.fortune.usercraft.exception.DuplicatePhoneException;
-import com.fortune.usercraft.exception.CredentialsMismatchException;
-import com.fortune.usercraft.exception.NoSuchUserException;
-import com.fortune.usercraft.repository.UserRepository;
+import com.fortune.usercraft.repository.UserCoreRepo;
 import com.fortune.usercraft.util.UserUtil;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
-    private final UserRepository userRepository;
+    private final UserCoreRepo userCoreRepo;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
+    public UserService(UserCoreRepo userCoreRepo,
+                       PasswordEncoder passwordEncoder,
+                       AuthenticationManager authenticationManager) {
+        this.userCoreRepo = userCoreRepo;
         this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
     }
 
-    public String login(String phone, String password) {
-
-        User user = userRepository.findByPhone(phone).orElseThrow(NoSuchUserException::new);
-
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new CredentialsMismatchException();
-        }
-        return user.getUserId();
-    }
-
-    public String register(String phone, String password) {
+    public String registerStudent(String phone, String password) {
         // don't check the validation of username and password,
         // assume that all the simple checking has been passed
-
-        if (userRepository.existsByPhone(phone)) {
+        if (userCoreRepo.existsByUsername(phone)) {
             throw new DuplicatePhoneException();
         }
         String uuid = UserUtil.generateUuid();
-        while (userRepository.existsByUserId(uuid)) {
+        while (userCoreRepo.existsByUserId(uuid)) {
             uuid = UserUtil.generateUuid();
         }
-        User user = new User();
-        user.setUserId(uuid);
-        user.setPhone(phone);
+        UserCore userCore = new UserCore();
+        userCore.setUserId(uuid);
+        userCore.setUsername(phone);
         String encodedPassword = this.passwordEncoder.encode(password);
-        user.setPassword(encodedPassword);
+        userCore.setPassword(encodedPassword);
 
-        user.setRole("STUDENT");
+        userCore.setRole("STUDENT");
 
-        user = userRepository.save(user);
-        return user.getUserId();
+        userCore = userCoreRepo.save(userCore);
+        return userCore.getUserId();
     }
 }

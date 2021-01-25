@@ -1,4 +1,4 @@
-package com.fortune.usercraft.config;
+package com.fortune.usercraft;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;

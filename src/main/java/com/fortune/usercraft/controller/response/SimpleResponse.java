@@ -3,6 +3,7 @@ package com.fortune.usercraft.controller.response;
 public class SimpleResponse {
     private String ecode;
     private String msg;
+    // TODO: add a content
 
     public SimpleResponse(String ecode, String msg) {
         this.ecode = ecode;

@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.fortune</groupId>
-    <artifactId>user-craft</artifactId>
+    <artifactId>userCore-craft</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>user-craft</name>
-    <description>Demo project for fortune project user system</description>
+    <name>userCore-craft</name>
+    <description>Demo project for fortune project userCore system</description>
 
     <properties>
         <java.version>1.8</java.version>
