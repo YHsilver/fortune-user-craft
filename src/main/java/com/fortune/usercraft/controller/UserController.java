@@ -35,9 +35,6 @@ public class UserController {
 
     @GetMapping("/current")
     public AppResponse<UserCore> getCurrentUserInfo(@AuthenticationPrincipal AppUserDetails userDetails) {
-        if (userDetails == null) {
-            throw new NotLoginEx();
-        }
         UserCore current = userService.getUserInfoByUid(userDetails.getUid());
         return AppResponse.successWithContent(current);
     }
