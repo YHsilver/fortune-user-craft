@@ -24,8 +24,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                     .password(userCore.getPassword())
                     .roles(userCore.getRole())
                     .build();
-        AppUserDetails appUserDetails = new AppUserDetails(userCore.getUserId(), userCore.getRole(),
+        return new AppUserDetails(userCore.getUserId(), userCore.getRole(),
                 user.getUsername(), user.getPassword(), user.getAuthorities());
-        return appUserDetails;
     }
 }

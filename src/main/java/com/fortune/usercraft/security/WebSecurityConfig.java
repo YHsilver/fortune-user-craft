@@ -1,8 +1,14 @@
 package com.fortune.usercraft.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fortune.usercraft.config.ErrorCode;
+import com.fortune.usercraft.controller.response.AppResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -14,13 +20,20 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import javax.lang.model.type.NullType;
+
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class);
 
     private final PasswordAuthenticationFilter passwordAuthenticationFilter;
+    private final ObjectMapper objectMapper;
 
-    public WebSecurityConfig(PasswordAuthenticationFilter passwordAuthenticationFilter) {
+    public WebSecurityConfig(PasswordAuthenticationFilter passwordAuthenticationFilter,
+                             ObjectMapper objectMapper) {
         this.passwordAuthenticationFilter = passwordAuthenticationFilter;
+        this.objectMapper = objectMapper;
     }
 
     @Bean @Override
@@ -46,9 +59,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         // disable useless filters
-        http.cors();
-        http.csrf().disable().formLogin().disable().logout().disable();
+        http.csrf().disable().formLogin().disable().logout().disable().httpBasic().disable();
 
+        http.cors();
         http.authorizeRequests()
                 .antMatchers("/api/user/login",
                         "/api/user/register",
@@ -56,31 +69,40 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 ).permitAll()
                 .anyRequest().authenticated();
 
-        // config student authentication method
+        // config authentication method
         http.addFilterBefore(passwordAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        // todo: add leader
 
-        // todo: configure here
         http.exceptionHandling()
                 .authenticationEntryPoint((request, response, authException) -> {
-                    response.getWriter().println(authException.getMessage());
+                    logger.info("Request to {} meet AuthenticationException: {}",
+                            request.getRequestURI(), authException.getMessage());
+                    AppResponse<NullType> res = AppResponse.failure(ErrorCode.UNAUTHENTICATED, "用户未认证");
+                    String body = objectMapper.writeValueAsString(res);
+                    response.setContentType("application/json;charset=utf-8");
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().println(body);
                 })
                 .accessDeniedHandler((request, response, accessDeniedException) -> {
-                    response.getWriter().println(accessDeniedException.getMessage());
+                    logger.info("Request to {} meet AccessDeniedException: {}",
+                            request.getRequestURI(), accessDeniedException.getMessage());
+
+                    AppResponse<NullType> res = AppResponse.failure(ErrorCode.UNAUTHORIZED, "无权访问");
+                    String body = objectMapper.writeValueAsString(res);
+                    response.setContentType("application/json;charset=utf-8");
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().println(body);
                 });
-        // todo: 可以直接配置这里
-//        http.formLogin().successHandler().failureHandler().failureForwardUrl()
     }
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-//        web.ignoring().antMatchers("/h2-console/**");
+        // TODO: config to ignore static resource
 //        web.ignoring().antMatchers("/**"); // only static resource
     }
 
-    // Used by spring security if CORS is enabled.
     @Bean
     public CorsFilter corsFilter() {
+        // config cors
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();

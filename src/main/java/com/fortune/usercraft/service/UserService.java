@@ -1,14 +1,11 @@
 package com.fortune.usercraft.service;
 
 import com.fortune.usercraft.entity.UserCore;
-import com.fortune.usercraft.exception.DuplicatePhoneException;
+import com.fortune.usercraft.exception.DuplicatePhoneEx;
+import com.fortune.usercraft.exception.UnknownEx;
 import com.fortune.usercraft.repository.UserCoreRepo;
 import com.fortune.usercraft.util.UserUtil;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +27,7 @@ public class UserService {
         // don't check the validation of username and password,
         // assume that all the simple checking has been passed
         if (userCoreRepo.existsByUsername(phone)) {
-            throw new DuplicatePhoneException();
+            throw new DuplicatePhoneEx();
         }
         String uuid = UserUtil.generateUuid();
         while (userCoreRepo.existsByUserId(uuid)) {
@@ -46,5 +43,9 @@ public class UserService {
 
         userCore = userCoreRepo.save(userCore);
         return userCore.getUserId();
+    }
+
+    public UserCore getUserInfoByUid(String uid) {
+        return userCoreRepo.findByUserId(uid).orElseThrow(UnknownEx::new);
     }
 }
