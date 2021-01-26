@@ -13,14 +13,11 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final UserCoreRepo userCoreRepo;
     private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
 
     public UserService(UserCoreRepo userCoreRepo,
-                       PasswordEncoder passwordEncoder,
-                       AuthenticationManager authenticationManager) {
+                       PasswordEncoder passwordEncoder) {
         this.userCoreRepo = userCoreRepo;
         this.passwordEncoder = passwordEncoder;
-        this.authenticationManager = authenticationManager;
     }
 
     public String registerStudent(String phone, String password) {
@@ -30,9 +27,6 @@ public class UserService {
             throw new DuplicatePhoneEx();
         }
         String uuid = UserUtil.generateUuid();
-        while (userCoreRepo.existsByUserId(uuid)) {
-            uuid = UserUtil.generateUuid();
-        }
         UserCore userCore = new UserCore();
         userCore.setUserId(uuid);
         userCore.setUsername(phone);
