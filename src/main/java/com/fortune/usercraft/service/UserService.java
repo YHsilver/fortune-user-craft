@@ -2,6 +2,7 @@ package com.fortune.usercraft.service;
 
 import com.fortune.usercraft.entity.UserCore;
 import com.fortune.usercraft.exception.DuplicatePhoneEx;
+import com.fortune.usercraft.exception.DuplicateUsernameEx;
 import com.fortune.usercraft.exception.UnknownEx;
 import com.fortune.usercraft.repository.UserCoreRepo;
 import com.fortune.usercraft.util.UserUtil;
@@ -34,6 +35,23 @@ public class UserService {
         userCore.setPassword(encodedPassword);
 
         userCore.setRole("STUDENT");
+
+        userCore = userCoreRepo.save(userCore);
+        return userCore.getUserId();
+    }
+
+    public String registerLeader(String username, String password) {
+        if (userCoreRepo.existsByUsername(username)) {
+            throw new DuplicateUsernameEx();
+        }
+        String uuid = UserUtil.generateUuid();
+        UserCore userCore = new UserCore();
+        userCore.setUserId(uuid);
+        userCore.setUsername(username);
+        String encodedPassword = this.passwordEncoder.encode(password);
+        userCore.setPassword(encodedPassword);
+
+        userCore.setRole("LEADER");
 
         userCore = userCoreRepo.save(userCore);
         return userCore.getUserId();

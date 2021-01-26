@@ -62,9 +62,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable().formLogin().disable().logout().disable().httpBasic().disable();
 
         http.cors();
+        // TODO: configure here:
         http.authorizeRequests()
                 .antMatchers("/api/user/login",
-                        "/api/user/register",
+                        "/api/user/registerLeader",
+                        "/api/user/registerStudent",
                         "/api/user/current"
                 ).permitAll()
                 .anyRequest().authenticated();
